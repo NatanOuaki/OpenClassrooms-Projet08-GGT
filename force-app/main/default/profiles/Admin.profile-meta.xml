@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Profile xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Les champs custom obligatoires sont toujours pleinement accessibles et n'ont pas
+         besoin d'entrée explicite. Ce fichier accorde la FLS admin sur les champs custom
+         optionnels utilisés avec Security.stripInaccessible, qui ne l'obtiennent pas
+         automatiquement lors d'un déploiement au format source. -->
+    <fieldPermissions>
+        <field>Trip__c.Number_of_Participants__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Trip__c.Total_Cost__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Trip__c.Opportunity__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Opportunity.Destination__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Opportunity.Start_Date__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Opportunity.End_Date__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Opportunity.Number_of_Participants__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+</Profile>
