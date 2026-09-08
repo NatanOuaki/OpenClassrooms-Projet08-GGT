@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Opportunity_Amount_Not_Negative</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    NOT(ISBLANK(TEXT(Amount))),
+    Amount &lt; 0
+)</errorConditionFormula>
+    <errorMessage>Le montant de l&apos;opportunité ne peut pas être négatif.</errorMessage>
+</ValidationRule>
