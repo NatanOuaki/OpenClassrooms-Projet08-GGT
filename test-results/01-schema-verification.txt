@@ -1,0 +1,57 @@
+=== Etape 1 - Verification schema GlobalGroupTravel-CRM ===
+Org: OC_Projet08 (Mar  8 sep 2026 19:51:00 IDT)
+
+--- CustomObjects deployes ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌───────────────┐
+│ DEVELOPERNAME │
+├───────────────┤
+│ Trip_Settings │
+│ Trip          │
+└───────────────┘
+
+[1mTotal number of records retrieved: 2.[22m
+
+--- Champs Trip__c ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌───────────────────────────┐
+│ QUALIFIEDAPINAME          │
+├───────────────────────────┤
+│ Account__c                │
+│ Destination__c            │
+│ End_Date__c               │
+│ Number_of_Participants__c │
+│ Opportunity__c            │
+│ Start_Date__c             │
+│ Status__c                 │
+│ Total_Cost__c             │
+└───────────────────────────┘
+
+[1mTotal number of records retrieved: 8.[22m
+
+--- Champs custom Opportunity (GGT-01) ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌───────────────────────────┐
+│ QUALIFIEDAPINAME          │
+├───────────────────────────┤
+│ Destination__c            │
+│ End_Date__c               │
+│ Number_of_Participants__c │
+│ Start_Date__c             │
+└───────────────────────────┘
+
+[1mTotal number of records retrieved: 4.[22m
+
+--- Trip_Settings__mdt.Default ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌───────────────┬─────────────────────┬──────────────────────────┐
+│ DEVELOPERNAME │ MIN_PARTICIPANTS__C │ DAYS_BEFORE_DEPARTURE__C │
+├───────────────┼─────────────────────┼──────────────────────────┤
+│ Default       │ 10                  │ 7                        │
+└───────────────┴─────────────────────┴──────────────────────────┘
+
+[1mTotal number of records retrieved: 1.[22m
