@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Days_Before_Departure__c</fullName>
+    <label>Days Before Departure</label>
+    <type>Number</type>
+    <precision>3</precision>
+    <scale>0</scale>
+    <required>true</required>
+    <description>Nombre de jours avant la date de départ déclenchant la vérification du seuil de participants (GGT-04).</description>
+</CustomField>
