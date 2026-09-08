@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <label>Status</label>
+    <type>Picklist</type>
+    <required>true</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>À venir</fullName>
+                <default>true</default>
+                <label>À venir</label>
+            </value>
+            <value>
+                <fullName>En cours</fullName>
+                <default>false</default>
+                <label>En cours</label>
+            </value>
+            <value>
+                <fullName>Terminé</fullName>
+                <default>false</default>
+                <label>Terminé</label>
+            </value>
+            <value>
+                <fullName>Annulé</fullName>
+                <default>false</default>
+                <label>Annulé</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
