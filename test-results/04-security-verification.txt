@@ -1,0 +1,64 @@
+=== Etape 2 - Verification securite GlobalGroupTravel-CRM ===
+Org: OC_Projet08 (Mar  8 sep 2026 19:57:32 IDT)
+
+--- Roles ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌──────────────────────────────────────┬────────────────────┐
+│ DEVELOPERNAME                        │ PARENTROLEID       │
+├──────────────────────────────────────┼────────────────────┤
+│ Commercial_GlobalGroupTravel         │ 00Eg8000005jjKfEAI │
+│ Manager_Commercial_GlobalGroupTravel │ [1mnull[22m               │
+└──────────────────────────────────────┴────────────────────┘
+
+[1mTotal number of records retrieved: 2.[22m
+
+--- Public Group ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌────────────────────────────┬────────────────────────────┬─────────┐
+│ NAME                       │ DEVELOPERNAME              │ TYPE    │
+├────────────────────────────┼────────────────────────────┼─────────┤
+│ Managers GlobalGroupTravel │ Managers_GlobalGroupTravel │ Regular │
+└────────────────────────────┴────────────────────────────┴─────────┘
+
+[1mTotal number of records retrieved: 1.[22m
+
+--- Permission Set ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌──────────────────────────────┬──────────────────────────────┐
+│ NAME                         │ LABEL                        │
+├──────────────────────────────┼──────────────────────────────┤
+│ Commercial_GlobalGroupTravel │ Commercial GlobalGroupTravel │
+└──────────────────────────────┴──────────────────────────────┘
+
+[1mTotal number of records retrieved: 1.[22m
+
+--- FLS Total_Cost__c sur le Permission Set ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌───────────────────────┬─────────────────┬─────────────────┐
+│ FIELD                 │ PERMISSIONSREAD │ PERMISSIONSEDIT │
+├───────────────────────┼─────────────────┼─────────────────┤
+│ Trip__c.Total_Cost__c │ true            │ false           │
+└───────────────────────┴─────────────────┴─────────────────┘
+
+[1mTotal number of records retrieved: 1.[22m
+
+--- Sharing Rule ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+[1m[31mError (1):[39m[22m 
+SELECT DeveloperName FROM SharingCriteriaRule WHERE DeveloperName='Cancelled_Trips_Shared_With_Managers'
+                          ^
+ERROR at Row:1:Column:27
+sObject type 'SharingCriteriaRule' is not supported. If you are attempting to use a custom object, be sure to append the '__c' after the entity name. Please reference your WSDL or the describe call for the appropriate names.
+
+
+
+--- Note sur la Sharing Rule ---
+Les règles de partage ne sont pas interrogeables via SOQL standard (pas de sObject de données correspondant).
+Confirmation par le déploiement réussi (sf project deploy start --source-dir force-app/main/default/sharingRules) :
+  success: true, deployed: 3/3, componentFailures: []
+  Composant déployé : Trip__c.Cancelled_Trips_Shared_With_Managers (SharingCriteriaRule)
