@@ -5,7 +5,7 @@
       "default": true
     }
   ],
-  "name": "OC_Projet08",
+  "name": "GlobalGroupTravel-CRM",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "65.0"
