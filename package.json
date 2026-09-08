@@ -1,8 +1,8 @@
 {
-  "name": "salesforce-app",
+  "name": "globalgrouptravel-crm",
   "private": true,
   "version": "1.0.0",
-  "description": "Salesforce App",
+  "description": "GlobalGroupTravel CRM - Salesforce back-end (data model + Apex)",
   "scripts": {
     "lint": "eslint **/{aura,lwc}/**/*.js",
     "test": "npm run test:unit",
