@@ -1,0 +1,3 @@
+SELECT Id, Name, StageName, (SELECT Id, Status__c, Destination__c, Total_Cost__c FROM Trips__r)
+FROM Opportunity
+WHERE StageName = 'Closed Won'
