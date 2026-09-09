@@ -7,20 +7,23 @@
 public with sharing class TripService {
     /**
      * Crée un Trip__c pour chaque Opportunity venant de passer à Closed Won (GGT-02),
-     * en respectant le mapping de champs officiel. Ne plante pas si les champs custom
-     * de l'Opportunity sont vides ; un avertissement est journalisé dans ce cas.
+     * en respectant le mapping de champs officiel. Destination__c, Start_Date__c et
+     * End_Date__c étant obligatoires sur Trip__c, une Opportunity dont ces champs sont
+     * vides ne peut pas donner lieu à un Trip__c valide : ce cas est journalisé en
+     * avertissement et ignoré plutôt que de faire échouer toute la transaction.
      * @param closedWonOpportunities Opportunity venant de passer au stade Closed Won.
      */
     public void createTripsFromOpportunities(List<Opportunity> closedWonOpportunities) {
         List<Trip__c> tripsToInsert = new List<Trip__c>();
 
         for (Opportunity closedWonOpportunity : closedWonOpportunities) {
-            if (hasMissingTripFields(closedWonOpportunity)) {
+            if (isMissingRequiredTripFields(closedWonOpportunity)) {
                 System.debug(
                     LoggingLevel.WARN,
-                    'Opportunity ' + closedWonOpportunity.Id + ' est passée à Closed Won avec des champs voyage incomplets ; ' +
-                    'le Trip__c sera tout de même créé avec les valeurs disponibles.'
+                    'Opportunity ' + closedWonOpportunity.Id + ' est passée à Closed Won sans Destination__c/Start_Date__c/End_Date__c ; ' +
+                    'aucun Trip__c ne peut être créé (champs obligatoires manquants).'
                 );
+                continue;
             }
 
             Trip__c trip = new Trip__c();
@@ -94,10 +97,7 @@ public with sharing class TripService {
         return Constants.TRIP_STATUS_EN_COURS;
     }
 
-    private Boolean hasMissingTripFields(Opportunity opp) {
-        return opp.Destination__c == null
-            || opp.Start_Date__c == null
-            || opp.End_Date__c == null
-            || opp.Number_of_Participants__c == null;
+    private Boolean isMissingRequiredTripFields(Opportunity opp) {
+        return opp.Destination__c == null || opp.Start_Date__c == null || opp.End_Date__c == null;
     }
 }
