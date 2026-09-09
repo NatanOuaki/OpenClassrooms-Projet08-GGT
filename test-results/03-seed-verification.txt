@@ -1,0 +1,296 @@
+=== Etape 5 - Verification seed data GlobalGroupTravel-CRM ===
+Org: OC_Projet08 (Mer  9 sep 2026 18:33:21 IDT)
+
+--- Comptages ---
+Account:
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+
+[1mTotal number of records retrieved: 18.[22m
+
+Opportunity:
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+
+[1mTotal number of records retrieved: 39.[22m
+
+Contract:
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+
+[1mTotal number of records retrieved: 5.[22m
+
+Trip__c:
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+
+[1mTotal number of records retrieved: 10.[22m
+
+Task:
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+
+[1mTotal number of records retrieved: 10.[22m
+
+--- Opportunities Closed Won -> Trip__c genere automatiquement (GGT-02) ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+{
+  "status": 0,
+  "result": {
+    "records": [
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWN9AAO"
+        },
+        "Id": "006g8000007BWN9AAO",
+        "Name": "Express Logistics Standby Generator",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNAAA4"
+        },
+        "Id": "006g8000007BWNAAA4",
+        "Name": "GenePoint Standby Generator",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNDAA4"
+        },
+        "Id": "006g8000007BWNDAA4",
+        "Name": "United Oil SLA",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNFAA4"
+        },
+        "Id": "006g8000007BWNFAA4",
+        "Name": "Edge Emergency Generator",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNGAA4"
+        },
+        "Id": "006g8000007BWNGAA4",
+        "Name": "University of AZ Portable Generators",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNKAA4"
+        },
+        "Id": "006g8000007BWNKAA4",
+        "Name": "GenePoint SLA",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNMAA4"
+        },
+        "Id": "006g8000007BWNMAA4",
+        "Name": "Edge Installation",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNNAA4"
+        },
+        "Id": "006g8000007BWNNAA4",
+        "Name": "Edge SLA",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNOAA4"
+        },
+        "Id": "006g8000007BWNOAA4",
+        "Name": "Grand Hotels Generator Installations",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNPAA4"
+        },
+        "Id": "006g8000007BWNPAA4",
+        "Name": "United Oil Installations",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNQAA4"
+        },
+        "Id": "006g8000007BWNQAA4",
+        "Name": "United Oil Refinery Generators",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNRAA4"
+        },
+        "Id": "006g8000007BWNRAA4",
+        "Name": "Burlington Textiles Weaving Plant Generator",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNUAA4"
+        },
+        "Id": "006g8000007BWNUAA4",
+        "Name": "University of AZ SLA",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNVAA4"
+        },
+        "Id": "006g8000007BWNVAA4",
+        "Name": "United Oil Installations",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNWAA4"
+        },
+        "Id": "006g8000007BWNWAA4",
+        "Name": "United Oil Emergency Generators",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNXAA4"
+        },
+        "Id": "006g8000007BWNXAA4",
+        "Name": "Grand Hotels SLA",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNYAA4"
+        },
+        "Id": "006g8000007BWNYAA4",
+        "Name": "United Oil Standby Generators",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007BWNZAA4"
+        },
+        "Id": "006g8000007BWNZAA4",
+        "Name": "Grand Hotels Emergency Generators",
+        "StageName": "Closed Won",
+        "Trips__r": null
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007Xx5JAAS"
+        },
+        "Id": "006g8000007Xx5JAAS",
+        "Name": "Voyage scolaire Rome",
+        "StageName": "Closed Won",
+        "Trips__r": {
+          "totalSize": 1,
+          "done": true,
+          "records": [
+            {
+              "attributes": {
+                "type": "Trip__c",
+                "url": "/services/data/v67.0/sobjects/Trip__c/a00g8000029ZwSjAAK"
+              },
+              "Id": "a00g8000029ZwSjAAK",
+              "Status__c": "À venir",
+              "Destination__c": "Rome",
+              "Total_Cost__c": 15000
+            }
+          ]
+        }
+      },
+      {
+        "attributes": {
+          "type": "Opportunity",
+          "url": "/services/data/v67.0/sobjects/Opportunity/006g8000007Xx5LAAS"
+        },
+        "Id": "006g8000007Xx5LAAS",
+        "Name": "Tournoi sportif Barcelone",
+        "StageName": "Closed Won",
+        "Trips__r": {
+          "totalSize": 1,
+          "done": true,
+          "records": [
+            {
+              "attributes": {
+                "type": "Trip__c",
+                "url": "/services/data/v67.0/sobjects/Trip__c/a00g8000029ZwSkAAK"
+              },
+              "Id": "a00g8000029ZwSkAAK",
+              "Status__c": "À venir",
+              "Destination__c": "Barcelone",
+              "Total_Cost__c": 12000
+            }
+          ]
+        }
+      }
+    ],
+    "totalSize": 20,
+    "done": true
+  },
+  "warnings": []
+}
+
+--- Tous les Trip__c (manuels + auto-generes) ---
+ ›   Warning: @salesforce/cli update available from [92m2.123.1[39m to [92m2.150.6[39m.
+Querying Data... done
+┌────────────────────┬───────────┬────────────────┬───────────┬───────────────┬─────────────┬───────────────────────────┬────────────────────┬────────────────────┐
+│ ID                 │ NAME      │ DESTINATION__C │ STATUS__C │ START_DATE__C │ END_DATE__C │ NUMBER_OF_PARTICIPANTS__C │ ACCOUNT__C         │ OPPORTUNITY__C     │
+├────────────────────┼───────────┼────────────────┼───────────┼───────────────┼─────────────┼───────────────────────────┼────────────────────┼────────────────────┤
+│ a00g8000029ZwSsAAK │ TRIP-0005 │ Vienne         │ À venir   │ 2026-07-11    │ 2026-07-21  │ [1mnull[22m                      │ 001g800000loJnbAAE │ [1mnull[22m               │
+│ a00g8000029ZwSuAAK │ TRIP-0007 │ Marrakech      │ Annulé    │ 2026-07-31    │ 2026-08-10  │ [1mnull[22m                      │ 001g800000loJndAAE │ [1mnull[22m               │
+│ a00g8000029ZwStAAK │ TRIP-0006 │ Athènes        │ À venir   │ 2026-09-06    │ 2026-09-12  │ [1mnull[22m                      │ 001g800000loJncAAE │ [1mnull[22m               │
+│ a00g8000029ZwSwAAK │ TRIP-0009 │ Séville        │ À venir   │ 2026-09-16    │ 2026-09-20  │ [1mnull[22m                      │ 001g800000loJnaAAE │ [1mnull[22m               │
+│ a00g8000029ZwSqAAK │ TRIP-0003 │ Dublin         │ À venir   │ 2026-09-16    │ 2026-09-21  │ 5                         │ 001g800000loJnZAAU │ [1mnull[22m               │
+│ a00g8000029ZwSrAAK │ TRIP-0004 │ Porto          │ À venir   │ 2026-09-16    │ 2026-09-22  │ 15                        │ 001g800000loJnaAAE │ [1mnull[22m               │
+│ a00g8000029ZwSxAAK │ TRIP-0010 │ Prague         │ À venir   │ 2026-10-09    │ 2026-10-14  │ 25                        │ 001g800000loJnbAAE │ [1mnull[22m               │
+│ a00g8000029ZwSkAAK │ TRIP-0002 │ Barcelone      │ À venir   │ 2026-10-19    │ 2026-10-23  │ 22                        │ 001g800000loJnaAAE │ 006g8000007Xx5LAAS │
+│ a00g8000029ZwSjAAK │ TRIP-0001 │ Rome           │ À venir   │ 2026-10-24    │ 2026-10-29  │ 30                        │ 001g800000loJnZAAU │ 006g8000007Xx5JAAS │
+│ a00g8000029ZwSvAAK │ TRIP-0008 │ Tokyo          │ À venir   │ 2026-12-08    │ 2026-12-15  │ 20                        │ 001g800000loJnZAAU │ [1mnull[22m               │
+└────────────────────┴───────────┴────────────────┴───────────┴───────────────┴─────────────┴───────────────────────────┴────────────────────┴────────────────────┘
+
+[1mTotal number of records retrieved: 10.[22m

@@ -1,0 +1,3 @@
+SELECT Id, Name, Destination__c, Status__c, Start_Date__c, End_Date__c, Number_of_Participants__c, Account__c, Opportunity__c
+FROM Trip__c
+ORDER BY Start_Date__c
