@@ -10,10 +10,10 @@ public with sharing class TripStatusUpdateBatch implements Database.Batchable<SO
     private Integer updatedTripCount = 0;
 
     /**
-     * Charge tous les Trip__c non annulés, candidats au recalcul de statut.
+     * Charge uniquement les Trip__c non annulés dont le statut est périmé par rapport à leurs dates.
      */
     public List<Trip__c> start(Database.BatchableContext context) {
-        return tripSelector.selectActiveForStatusRecalculation();
+        return tripSelector.selectWithOutdatedStatus();
     }
 
     /**

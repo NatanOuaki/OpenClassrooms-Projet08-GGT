@@ -200,7 +200,7 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Besoin métier** : le statut d'un `Trip__c` doit refléter automatiquement les dates (`À venir` / `En cours` / `Terminé`), sauf pour les `Trip__c` déjà `Annulé`.
 
-**Solution technique** : `TripStatusUpdateBatch` sélectionne tous les `Trip__c` dont `Status__c != 'Annulé'` (exclusion dès la requête, jamais de réécriture d'un `Trip__c` annulé), recalcule le statut attendu via `TripService.computeStatusForDates()` et ne fait un `update` que si le statut calculé diffère du statut actuel (évite les DML inutiles). `TripStatusUpdateScheduler` planifie ce batch avec une taille de lot explicite (200).
+**Solution technique** : `TripStatusUpdateBatch` charge, via `TripSelector.selectWithOutdatedStatus()`, uniquement les `Trip__c` non annulés dont le statut ne correspond plus à leurs dates : voyage futur non « À venir », voyage passé non « Terminé », ou voyage en cours non « En cours ». L'exclusion de `Status__c = 'Annulé'` se fait dès la requête (jamais de réécriture d'un `Trip__c` annulé). Le batch recalcule ensuite le statut attendu via `TripService.computeStatusForDates()` et ne fait un `update` que si le statut calculé diffère du statut actuel, ce qui reste une seconde protection contre les DML inutiles. `TripStatusUpdateScheduler` planifie ce batch avec une taille de lot explicite (200).
 
 ### Ordre de planification
 
@@ -280,7 +280,18 @@ public void execute(Database.BatchableContext context, List<Trip__c> scope) {
 }
 ```
 
-Le `start()` de ce batch exclut déjà les `Trip__c` `Annulé` de la requête ; ce code ne fait en plus un `update` que sur les enregistrements dont le statut calculé diffère réellement de l'actuel, évitant des DML et des déclenchements de trigger inutiles.
+Le `start()` de ce batch appelle `TripSelector.selectWithOutdatedStatus()`, dont la requête exclut déjà les `Trip__c` `Annulé` et ne retourne que ceux dont le statut est périmé par rapport aux dates :
+
+```apex
+WHERE Status__c != :Constants.TRIP_STATUS_ANNULE
+AND (
+    (Start_Date__c > TODAY AND Status__c != :Constants.TRIP_STATUS_A_VENIR)
+    OR (End_Date__c < TODAY AND Status__c != :Constants.TRIP_STATUS_TERMINE)
+    OR (Start_Date__c <= TODAY AND End_Date__c >= TODAY AND Status__c != :Constants.TRIP_STATUS_EN_COURS)
+)
+```
+
+Le filtrage se fait donc dans la base de données plutôt qu'en mémoire Apex, ce qui évite de charger des milliers de `Trip__c` inutiles. Ce code d'`execute` ne fait en plus un `update` que sur les enregistrements dont le statut calculé diffère réellement de l'actuel, évitant des DML et des déclenchements de trigger inutiles.
 
 ---
 
