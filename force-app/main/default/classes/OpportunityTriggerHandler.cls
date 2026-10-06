@@ -1,12 +1,51 @@
 /**
- * Infrastructure de routage pour OpportunityTrigger : ne contient aucune règle métier,
- * détecte le passage à Closed Won et délègue la création de Trip__c à TripService (GGT-02).
+ * Infrastructure de routage pour OpportunityTrigger : dispatch() aiguille chaque événement
+ * vers sa méthode dédiée. Les méthodes ne contiennent aucune règle métier : elles détectent
+ * les enregistrements concernés et délèguent aux services (GGT-02 : TripService).
  */
 public with sharing class OpportunityTriggerHandler {
     private final TripService tripService = new TripService();
 
+    public void dispatch() {
+        switch on Trigger.operationType {
+            when BEFORE_INSERT {
+                beforeInsert(Trigger.new);
+            }
+            when BEFORE_UPDATE {
+                beforeUpdate(Trigger.new, (Map<Id, Opportunity>) Trigger.oldMap);
+            }
+            when BEFORE_DELETE {
+                beforeDelete(Trigger.old);
+            }
+            when AFTER_INSERT {
+                afterInsert(Trigger.new);
+            }
+            when AFTER_UPDATE {
+                afterUpdate(Trigger.new, (Map<Id, Opportunity>) Trigger.oldMap);
+            }
+            when AFTER_DELETE {
+                afterDelete(Trigger.old);
+            }
+            when AFTER_UNDELETE {
+                afterUndelete(Trigger.new);
+            }
+        }
+    }
+
+    public void beforeInsert(List<Opportunity> newOpportunities) {
+    }
+
+    public void beforeUpdate(List<Opportunity> updatedOpportunities, Map<Id, Opportunity> previousOpportunityById) {
+    }
+
+    public void beforeDelete(List<Opportunity> deletedOpportunities) {
+    }
+
+    public void afterInsert(List<Opportunity> insertedOpportunities) {
+    }
+
     /**
-     * Route les Opportunity venant de passer à Closed Won vers TripService.
+     * Route les Opportunity venant de passer à Closed Won vers TripService (GGT-02).
      * @param updatedOpportunities Trigger.new pour un after update sur Opportunity.
      * @param previousOpportunityById Trigger.oldMap pour un after update sur Opportunity.
      */
@@ -26,5 +65,11 @@ public with sharing class OpportunityTriggerHandler {
         if (!newlyClosedWonOpportunities.isEmpty()) {
             tripService.createTripsFromOpportunities(newlyClosedWonOpportunities);
         }
+    }
+
+    public void afterDelete(List<Opportunity> deletedOpportunities) {
+    }
+
+    public void afterUndelete(List<Opportunity> undeletedOpportunities) {
     }
 }

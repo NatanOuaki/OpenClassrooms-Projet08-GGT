@@ -60,6 +60,25 @@ private class TripTriggerHandlerTest {
     }
 
     @isTest
+    static void deleteAndUndeleteTrip_isDispatchedWithoutError() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        Trip__c trip = new Trip__c(
+            Account__c = acc.Id,
+            Destination__c = 'Vienne',
+            Start_Date__c = Date.today().addDays(5),
+            End_Date__c = Date.today().addDays(10)
+        );
+        insert trip;
+
+        Test.startTest();
+        delete trip;
+        undelete trip;
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Trip__c WHERE Id = :trip.Id]);
+    }
+
+    @isTest
     static void update_withEndDateMovedBeforeStartDate_isRejected() {
         Account acc = [SELECT Id FROM Account LIMIT 1];
         Trip__c trip = new Trip__c(

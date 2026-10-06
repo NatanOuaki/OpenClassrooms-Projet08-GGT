@@ -1,7 +1,10 @@
 /**
- * Infrastructure : route les Opportunity vers OpportunityTriggerHandler. Ne contient
- * aucune logique métier (GGT-02 est implémenté dans TripService).
+ * Infrastructure : se déclenche sur tous les événements Opportunity et délègue
+ * uniquement à OpportunityTriggerHandler.dispatch(). Aucune logique ni appel métier ici.
  */
-trigger OpportunityTrigger on Opportunity (after update) {
-    new OpportunityTriggerHandler().afterUpdate(Trigger.new, Trigger.oldMap);
+trigger OpportunityTrigger on Opportunity (
+    before insert, before update, before delete,
+    after insert, after update, after delete, after undelete
+) {
+    new OpportunityTriggerHandler().dispatch();
 }
