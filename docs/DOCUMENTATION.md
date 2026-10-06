@@ -180,7 +180,7 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Besoin métier** : quand une Opportunity passe à `Closed Won`, un `Trip__c` doit être créé automatiquement avec des valeurs par défaut, lié à l'Account de l'opportunité.
 
-**Solution technique** : `OpportunityTrigger` (`after update`) délègue à `OpportunityTriggerHandler`, qui détecte la transition vers `Closed Won` (comparaison `Trigger.new` / `Trigger.oldMap`, bulkifiée) et appelle `TripService.createTripsFromOpportunities()`. Le mapping de champs suit exactement la spécification (voir extrait de code section 5).
+**Solution technique** : `OpportunityTrigger` (déclaré sur tous les événements, une seule ligne : `new OpportunityTriggerHandler().dispatch()`) délègue à `OpportunityTriggerHandler.dispatch()`, qui aiguille chaque événement vers sa méthode dédiée. Pour GGT-02, `afterUpdate` détecte la transition vers `Closed Won` (comparaison `Trigger.new` / `Trigger.oldMap`, bulkifiée) et appelle `TripService.createTripsFromOpportunities()`. Le mapping de champs suit exactement la spécification (voir extrait de code section 5).
 
 **Cas limite géré** : `Destination__c`, `Start_Date__c` et `End_Date__c` étant obligatoires sur `Trip__c`, une Opportunity Closed Won dont ces champs sont vides ne peut structurellement pas produire de `Trip__c` valide. Ce cas est journalisé en avertissement (`System.debug`) et l'Opportunity est ignorée, plutôt que de faire échouer toute la transaction (bulkifiée) pour les autres Opportunity du lot.
 
@@ -188,7 +188,7 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Besoin métier** : un `Trip__c` créé ou modifié doit avoir une date de fin postérieure à sa date de début.
 
-**Solution technique** : `TripTrigger` (`before insert`, `before update`) délègue à `TripTriggerHandler.validateDateConsistency()`, qui bloque via `addError()` sur le champ `End_Date__c` si `End_Date__c < Start_Date__c`. Implémenté exclusivement en Apex (pas de Validation Rule), comme exigé par le cahier des charges pour démontrer la compétence trigger.
+**Solution technique** : `TripTrigger` (déclaré sur tous les événements, une seule ligne : `new TripTriggerHandler().dispatch()`) délègue à `TripTriggerHandler.dispatch()`. Les méthodes `beforeInsert` et `beforeUpdate` appellent `TripService.validateDateConsistency()`, qui bloque via `addError()` sur le champ `End_Date__c` si `End_Date__c < Start_Date__c`. Implémenté exclusivement en Apex (pas de Validation Rule), comme exigé par le cahier des charges pour démontrer la compétence trigger.
 
 ### GGT-04 — Auto-annulation par sous-effectif
 
@@ -234,7 +234,25 @@ public void afterUpdate(List<Opportunity> updatedOpportunities, Map<Id, Opportun
 
 Ce code répond au besoin en ne créant un `Trip__c` que pour les Opportunity qui **viennent de passer** à Closed Won (et non celles qui y sont déjà, ou qui en repartent), et en restant bulkifié pour supporter un update de masse.
 
-### GGT-03 — Validation de cohérence des dates (`TripTriggerHandler.cls`)
+### Aiguillage des événements (`TripTriggerHandler.cls`)
+
+```apex
+public void dispatch() {
+    switch on Trigger.operationType {
+        when BEFORE_INSERT { beforeInsert(Trigger.new); }
+        when BEFORE_UPDATE { beforeUpdate(Trigger.new, Trigger.oldMap); }
+        when BEFORE_DELETE { beforeDelete(Trigger.old); }
+        when AFTER_INSERT { afterInsert(Trigger.new); }
+        when AFTER_UPDATE { afterUpdate(Trigger.new, Trigger.oldMap); }
+        when AFTER_DELETE { afterDelete(Trigger.old); }
+        when AFTER_UNDELETE { afterUndelete(Trigger.new); }
+    }
+}
+```
+
+Le trigger ne contient qu'un appel à `dispatch()` ; seul `dispatch()` lit le contexte `Trigger.*`, ce qui laisse les méthodes par événement testables. Même structure pour `OpportunityTriggerHandler`.
+
+### GGT-03 — Validation de cohérence des dates (`TripService.cls`)
 
 ```apex
 public void validateDateConsistency(List<Trip__c> trips) {
@@ -328,7 +346,7 @@ Le filtrage se fait donc dans la base de données plutôt qu'en mémoire Apex, c
 | TripStatusUpdateBatch | 100% |
 | **Couverture globale de l'org** | **100%** (exigence minimale Salesforce : 75% ; objectif du projet : >95%) |
 
-Résultat complet : `test-results/02-test-run-summary.txt` (45 tests, 100% de réussite).
+Résultat complet : `test-results/02-test-run-summary.txt` (47 tests, 100% de réussite).
 
 ### 6.3 Scénarios de sécurité testés
 

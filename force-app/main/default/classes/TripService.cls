@@ -97,6 +97,21 @@ public with sharing class TripService {
         return Constants.TRIP_STATUS_EN_COURS;
     }
 
+    /**
+     * Bloque tout Trip__c dont la date de fin est antérieure à la date de début (GGT-03).
+     * Ne fait rien si l'une des deux dates est vide : la règle ne s'applique qu'aux
+     * Trip__c dont les deux dates sont renseignées. À appeler en contexte "before".
+     * @param trips Trip__c à valider.
+     */
+    public void validateDateConsistency(List<Trip__c> trips) {
+        for (Trip__c trip : trips) {
+            Boolean bothDatesFilled = trip.Start_Date__c != null && trip.End_Date__c != null;
+            if (bothDatesFilled && trip.End_Date__c < trip.Start_Date__c) {
+                trip.End_Date__c.addError('La date de fin doit être postérieure à la date de début.');
+            }
+        }
+    }
+
     private Boolean isMissingRequiredTripFields(Opportunity opp) {
         return opp.Destination__c == null || opp.Start_Date__c == null || opp.End_Date__c == null;
     }

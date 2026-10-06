@@ -89,6 +89,26 @@ private class OpportunityTriggerHandlerTest {
     }
 
     @isTest
+    static void deleteAndUndeleteOpportunity_isDispatchedWithoutCreatingTrip() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        Opportunity opp = new Opportunity(
+            Name = 'Voyage Supprimé Puis Restauré',
+            AccountId = acc.Id,
+            StageName = 'Prospecting',
+            CloseDate = Date.today()
+        );
+        insert opp;
+
+        Test.startTest();
+        delete opp;
+        undelete opp;
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE Id = :opp.Id]);
+        System.assertEquals(0, [SELECT COUNT() FROM Trip__c]);
+    }
+
+    @isTest
     static void alreadyClosedWonOpportunity_updatedAgain_doesNotCreateDuplicateTrip() {
         Account acc = [SELECT Id FROM Account LIMIT 1];
         Opportunity opp = new Opportunity(

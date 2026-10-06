@@ -51,6 +51,16 @@ These rules are non-negotiable for all Apex written in this repo. Reference: htt
 - Do not split classes into artificial "Service" vs "Domain" buckets purely by naming convention — the deciding factor for where logic lives is cohesion: keep logic that changes together, together.
 - Service classes live under `force-app/main/default/classes/services/`, named `<Domain>Service` (e.g. `OpportunityService`).
 
+### Trigger layer
+
+- One trigger per SObject, named `<SObject>Trigger`, placed under `force-app/main/default/triggers/`.
+- Every trigger declares **all** events: `before insert, before update, before delete, after insert, after update, after delete, after undelete` — even when no business rule uses an event yet.
+- The trigger body is exactly one line: `new <SObject>TriggerHandler().dispatch();`. No business logic, no service call, no selector call, no condition in the trigger.
+- Every handler is named `<SObject>TriggerHandler`, lives under `force-app/main/default/classes/`, and exposes a public `dispatch()` method that does a `switch on Trigger.operationType` and calls exactly one dedicated method per event: `beforeInsert`, `beforeUpdate`, `beforeDelete`, `afterInsert`, `afterUpdate`, `afterDelete`, `afterUndelete`.
+- `dispatch()` is the only place that reads the `Trigger.*` context variables (`Trigger.new`, `Trigger.old`, `Trigger.oldMap`, `Trigger.operationType`); the per-event methods receive typed collections as parameters so they stay testable.
+- Per-event methods only detect which records are concerned and delegate to a service method. Business rules (validation, field mapping, thresholds) belong in `<Domain>Service`, never in the handler. Events with no rule yet keep an empty method.
+- Tests must exercise every event through real DML (insert, update, delete, undelete) so each `dispatch()` branch is covered.
+
 ### Constants
 
 - All constants for the project live in a single file/class, never scattered across business logic classes.
