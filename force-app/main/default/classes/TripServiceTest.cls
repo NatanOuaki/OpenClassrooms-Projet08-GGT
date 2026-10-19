@@ -65,6 +65,58 @@ private class TripServiceTest {
     }
 
     @isTest
+    static void createTripsForNewlyClosedWonOpportunities_createsTripOnlyForTransitionToClosedWon() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        Opportunity prospectingOppty = new Opportunity(
+            Name = 'Voyage Qui Vient De Signer',
+            AccountId = acc.Id,
+            StageName = 'Prospecting',
+            CloseDate = Date.today(),
+            Amount = 4000,
+            Destination__c = 'Porto',
+            Start_Date__c = Date.today().addDays(30),
+            End_Date__c = Date.today().addDays(34),
+            Number_of_Participants__c = 12
+        );
+        Opportunity alreadyWonOppty = new Opportunity(
+            Name = 'Voyage Déjà Signé',
+            AccountId = acc.Id,
+            StageName = 'Closed Won',
+            CloseDate = Date.today(),
+            Amount = 2000,
+            Destination__c = 'Séville',
+            Start_Date__c = Date.today().addDays(40),
+            End_Date__c = Date.today().addDays(44),
+            Number_of_Participants__c = 15
+        );
+        insert new List<Opportunity>{ prospectingOppty, alreadyWonOppty };
+
+        Opportunity newlyWonOppty = prospectingOppty.clone(true);
+        newlyWonOppty.StageName = 'Closed Won';
+        Opportunity stillWonOppty = alreadyWonOppty.clone(true);
+        stillWonOppty.Amount = 2500;
+
+        Test.startTest();
+        new TripService().createTripsForNewlyClosedWonOpportunities(
+            new List<Opportunity>{ newlyWonOppty, stillWonOppty },
+            new Map<Id, Opportunity>{ prospectingOppty.Id => prospectingOppty, alreadyWonOppty.Id => alreadyWonOppty }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Trip__c WHERE Opportunity__c = :prospectingOppty.Id]);
+        System.assertEquals(0, [SELECT COUNT() FROM Trip__c WHERE Opportunity__c = :alreadyWonOppty.Id]);
+    }
+
+    @isTest
+    static void createTripsForNewlyClosedWonOpportunities_doesNothingWhenNoOpportunityIsNewlyClosedWon() {
+        Test.startTest();
+        new TripService().createTripsForNewlyClosedWonOpportunities(new List<Opportunity>(), new Map<Id, Opportunity>());
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT COUNT() FROM Trip__c]);
+    }
+
+    @isTest
     static void insertTrips_doesNothingWhenListEmpty() {
         new TripService().insertTrips(new List<Trip__c>());
         System.assertEquals(0, [SELECT COUNT() FROM Trip__c]);

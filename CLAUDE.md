@@ -58,7 +58,7 @@ These rules are non-negotiable for all Apex written in this repo. Reference: htt
 - The trigger body is exactly one line: `new <SObject>TriggerHandler().dispatch();`. No business logic, no service call, no selector call, no condition in the trigger.
 - Every handler is named `<SObject>TriggerHandler`, lives under `force-app/main/default/classes/`, and exposes a public `dispatch()` method that does a `switch on Trigger.operationType` and calls exactly one dedicated method per event: `beforeInsert`, `beforeUpdate`, `beforeDelete`, `afterInsert`, `afterUpdate`, `afterDelete`, `afterUndelete`.
 - `dispatch()` is the only place that reads the `Trigger.*` context variables (`Trigger.new`, `Trigger.old`, `Trigger.oldMap`, `Trigger.operationType`); the per-event methods receive typed collections as parameters so they stay testable.
-- Per-event methods only detect which records are concerned and delegate to a service method. Business rules (validation, field mapping, thresholds) belong in `<Domain>Service`, never in the handler. Events with no rule yet keep an empty method.
+- Per-event methods are a plain chain of calls to service methods: no `if`, no loop, no null/empty check, no comparison between old and new values. Every check and condition — including deciding which records are concerned by a rule — lives in `<Domain>Service`, never in the handler. Events with no rule yet keep an empty method.
 - Tests must exercise every event through real DML (insert, update, delete, undelete) so each `dispatch()` branch is covered.
 
 ### Constants
