@@ -6,6 +6,28 @@
  */
 public with sharing class TripService {
     /**
+     * Repère les Opportunity venant de passer à Closed Won (comparaison avec leur version
+     * précédente) et crée leur Trip__c (GGT-02).
+     * @param updatedOpportunities Opportunity après modification.
+     * @param previousOpportunityById Opportunity avant modification, indexées par Id.
+     */
+    public void createTripsForNewlyClosedWonOpportunities(
+        List<Opportunity> updatedOpportunities,
+        Map<Id, Opportunity> previousOpportunityById
+    ) {
+        List<Opportunity> newlyClosedWonOpportunities = new List<Opportunity>();
+
+        for (Opportunity updatedOpportunity : updatedOpportunities) {
+            Opportunity previousOpportunity = previousOpportunityById.get(updatedOpportunity.Id);
+            if (isNewlyClosedWon(updatedOpportunity, previousOpportunity)) {
+                newlyClosedWonOpportunities.add(updatedOpportunity);
+            }
+        }
+
+        createTripsFromOpportunities(newlyClosedWonOpportunities);
+    }
+
+    /**
      * Crée un Trip__c pour chaque Opportunity venant de passer à Closed Won (GGT-02),
      * en respectant le mapping de champs officiel. Destination__c, Start_Date__c et
      * End_Date__c étant obligatoires sur Trip__c, une Opportunity dont ces champs sont
@@ -110,6 +132,11 @@ public with sharing class TripService {
                 trip.End_Date__c.addError('La date de fin doit être postérieure à la date de début.');
             }
         }
+    }
+
+    private Boolean isNewlyClosedWon(Opportunity updatedOpportunity, Opportunity previousOpportunity) {
+        return updatedOpportunity.StageName == Constants.OPPORTUNITY_STAGE_CLOSED_WON
+            && previousOpportunity.StageName != Constants.OPPORTUNITY_STAGE_CLOSED_WON;
     }
 
     private Boolean isMissingRequiredTripFields(Opportunity opp) {
