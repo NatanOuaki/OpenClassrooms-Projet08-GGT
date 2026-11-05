@@ -1,7 +1,6 @@
 # GlobalGroupTravel-CRM — Documentation Technique
 
 > Projet Salesforce DX pour GlobalGroupTravel, fournisseur de voyages de groupe à l'international et pour entreprises. Ce document couvre le modèle de données, le modèle de sécurité, les règles métier GGT-01 à GGT-05, la stratégie de tests et les limites connues.
->
 
 ---
 
@@ -67,6 +66,11 @@ erDiagram
     }
 ```
 
+
+![Schema Builder - objet Trip](screenshots/org-01-schema-builder-trip.png)
+
+*Figure 1 — Générateur de schéma Salesforce : l'objet personnalisé Trip__c, ses champs et ses relations vers Account (Compte) et Opportunity (Opportunité).*
+
 ### 2.2 Détail des champs custom
 
 **`Trip__c`** (sharing model : Private)
@@ -82,6 +86,11 @@ erDiagram
 | Total Cost | `Total_Cost__c` | Currency(16,2) | Champ éditable classique, alimenté depuis `Opportunity.Amount` à la création |
 | Account | `Account__c` | Lookup(Account) | Obligatoire |
 | Opportunity | `Opportunity__c` | Lookup(Opportunity) | Optionnel (un Trip peut être créé manuellement) |
+
+
+![Champs de Trip__c](screenshots/org-02-trip-fields.jpg)
+
+*Figure 2 — Gestionnaire d'objet : les 12 champs de Trip__c (8 champs métier + champs système).*
 
 **`Opportunity`** — champs custom ajoutés (GGT-01)
 
@@ -130,6 +139,15 @@ La cohérence des dates de `Trip__c` (GGT-03) est volontairement **exclue** des 
 | `Opportunity` | **Private** (voir écart documenté ci-dessous) |
 | `Case` | Private (effet de bord, voir ci-dessous) |
 
+
+![OWD Account et Opportunity](screenshots/org-03-owd-account-opportunity.jpg)
+
+*Figure 3 — Paramètres de partage : Compte et contrat, et Opportunité, en accès par défaut Privé.*
+
+![OWD Trip](screenshots/org-04-owd-trip.jpg)
+
+*Figure 4 — Paramètres de partage : l'objet Trip en accès par défaut Privé.*
+
 **Écart par rapport au cahier des charges — Opportunity OWD** : les notes de cadrage demandaient `Opportunity : Controlled by Parent`. L'API Metadata Salesforce **rejette explicitement** cette valeur pour l'objet Opportunity (`ControlledByParent is not a valid sharing model for Opportunity`), bien que l'interface Setup l'autorise dans certains contextes. `Opportunity` a donc été déployé en **Private**. Conséquence : un Manager ne voit pas automatiquement les Opportunity de ses commerciaux via la seule hiérarchie de rôles ; seuls Account, Contract et Trip__c en bénéficient pleinement. Piste d'évolution : ajouter une Sharing Rule basée sur les rôles si ce besoin se confirme.
 
 **Effet de bord — Case** : passer `Account` à Private a forcé Salesforce à revalider le sharing model de `Case` (objet standard non demandé dans ce projet), dont la valeur par défaut (`ReadWriteTransfer`) devenait incompatible. `Case` a donc été mis à `Private` pour permettre le déploiement, sans conséquence fonctionnelle puisque `Case` n'est pas utilisé dans ce projet.
@@ -145,15 +163,30 @@ Manager Commercial GlobalGroupTravel
 
 Avec un OWD Private sur `Account`/`Contract`/`Trip__c`, cette hiérarchie permet à un Manager de voir automatiquement les enregistrements de ses commerciaux subordonnés, sans élargir la Sharing Rule ci-dessous — les deux mécanismes sont complémentaires, pas redondants.
 
+
+![Hiérarchie des rôles](screenshots/org-05-roles.png)
+
+*Figure 5 — Hiérarchie des rôles : Manager Commercial GlobalGroupTravel, parent de Commercial GlobalGroupTravel.*
+
 ### 3.3 Permission Set `Commercial_GlobalGroupTravel`
 
 CRUD complet sur `Account`, `Opportunity`, `Contract`, `Task`, `Trip__c`. FLS restreinte : `Trip__c.Total_Cost__c` en **lecture seule** (le montant total du voyage n'est éditable que par un administrateur).
 
 > Note technique : les champs marqués `required=true` (ex. `Trip__c.Destination__c`, `Start_Date__c`, `End_Date__c`, `Account__c`, `Status__c`) sont toujours pleinement accessibles côté plateforme Salesforce et ne peuvent pas recevoir d'entrée FLS explicite — seuls les champs optionnels apparaissent dans le Permission Set.
 
+
+![Permission Set Commercial](screenshots/org-06-permission-set.jpg)
+
+*Figure 6 — Ensemble d'autorisations Commercial_GlobalGroupTravel : CRUD sur les objets métier, Total_Cost__c en lecture seule.*
+
 ### 3.4 Sharing Rule
 
 Une Criteria-Based Sharing Rule sur `Trip__c` partage en lecture seule les enregistrements `Status__c = 'Annulé'` avec le Public Group `Managers_GlobalGroupTravel` (groupe vide à la livraison, alimenté par l'équipe GlobalGroupTravel).
+
+
+![Sharing Rule Trip](screenshots/org-07-sharing-rule-trip.jpg)
+
+*Figure 7 — Règle de partage sur Trip : les voyages au statut Annulé sont partagés en lecture seule avec le groupe Managers GlobalGroupTravel.*
 
 ### 3.5 Enforcement dans le code
 
@@ -179,9 +212,18 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Besoin métier** : quand une Opportunity passe à `Closed Won`, un `Trip__c` doit être créé automatiquement avec des valeurs par défaut, lié à l'Account de l'opportunité.
 
-**Solution technique** : `OpportunityTrigger` (déclaré sur tous les événements, une seule ligne : `new OpportunityTriggerHandler().dispatch()`) délègue à `OpportunityTriggerHandler.dispatch()`, qui aiguille chaque événement vers sa méthode dédiée. Pour GGT-02, `afterUpdate` détecte la transition vers `Closed Won` (comparaison `Trigger.new` / `Trigger.oldMap`, bulkifiée) et appelle `TripService.createTripsFromOpportunities()`. Le mapping de champs suit exactement la spécification (voir extrait de code section 5).
+**Solution technique** : `OpportunityTrigger` (déclaré sur tous les événements, une seule ligne : `new OpportunityTriggerHandler().dispatch()`) délègue à `OpportunityTriggerHandler.dispatch()`, qui aiguille chaque événement vers sa méthode dédiée. Pour GGT-02, `afterUpdate` ne contient qu'un appel à `TripService.createTripsForNewlyClosedWonOpportunities()`. C'est le service qui compare `Trigger.new` et `Trigger.oldMap` (bulkifié), retient les Opportunity qui viennent de passer à `Closed Won`, puis crée leurs `Trip__c`. Le mapping de champs suit exactement la spécification.
 
 **Cas limite géré** : `Destination__c`, `Start_Date__c` et `End_Date__c` étant obligatoires sur `Trip__c`, une Opportunity Closed Won dont ces champs sont vides ne peut structurellement pas produire de `Trip__c` valide. Ce cas est journalisé en avertissement (`System.debug`) et l'Opportunity est ignorée, plutôt que de faire échouer toute la transaction (bulkifiée) pour les autres Opportunity du lot.
+
+
+![Code GGT-02 trigger et handler](screenshots/code-01-ggt02-trigger-handler.png)
+
+*Figure 8 — Code GGT-02 : OpportunityTrigger, dispatch() et afterUpdate(), réduit à un seul appel au service.*
+
+![Code GGT-02 service](screenshots/code-02-ggt02-service.png)
+
+*Figure 9 — Code GGT-02 : TripService détecte la transition vers Closed Won, crée les Trip__c en lot et applique le CRUD/FLS avant l'insertion.*
 
 ### GGT-03 — Cohérence des dates
 
@@ -189,11 +231,29 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Solution technique** : `TripTrigger` (déclaré sur tous les événements, une seule ligne : `new TripTriggerHandler().dispatch()`) délègue à `TripTriggerHandler.dispatch()`. Les méthodes `beforeInsert` et `beforeUpdate` appellent `TripService.validateDateConsistency()`, qui bloque via `addError()` sur le champ `End_Date__c` si `End_Date__c < Start_Date__c`. Implémenté exclusivement en Apex (pas de Validation Rule), comme exigé par le cahier des charges pour démontrer la compétence trigger.
 
+
+![Code GGT-03](screenshots/code-03-ggt03-validation.png)
+
+*Figure 10 — Code GGT-03 : TripTrigger, TripTriggerHandler.beforeInsert() et TripService.validateDateConsistency() avec addError().*
+
+![Triggers Apex actifs](screenshots/org-08-apex-triggers.jpg)
+
+*Figure 11 — Déclencheurs Apex de l'org : OpportunityTrigger et TripTrigger, actifs en version d'API 65.0.*
+
 ### GGT-04 — Auto-annulation par sous-effectif
 
 **Besoin métier** : un `Trip__c` doit être auto-annulé si moins de 10 participants sont inscrits à J-7 de la date de début.
 
 **Solution technique** : `TripAutoCancelBatch` (`Database.Batchable<SObject>, Database.Stateful`) lit les seuils (`Min_Participants__c`, `Days_Before_Departure__c`) depuis `Trip_Settings__mdt.Default` plutôt que de les coder en dur, sélectionne les `Trip__c` dont `Start_Date__c` correspond à la date cible, `Number_of_Participants__c` est renseigné et strictement inférieur au seuil, et hors `Status__c = 'Annulé'`. `TripAutoCancelScheduler` (`Schedulable`) planifie ce batch avec une taille de lot explicite (200).
+
+
+![Code GGT-04 batch](screenshots/code-04-ggt04-batch.png)
+
+*Figure 12 — Code GGT-04 : TripAutoCancelBatch (start, execute, finish) avec Database.Stateful.*
+
+![Code GGT-04 requête et scheduler](screenshots/code-05-ggt04-selector-scheduler.png)
+
+*Figure 13 — Code GGT-04 : requête du TripSelector, TripAutoCancelScheduler et planification à 01h00.*
 
 ### GGT-05 — Recalcul automatique de statut
 
@@ -201,116 +261,29 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 **Solution technique** : `TripStatusUpdateBatch` charge, via `TripSelector.selectWithOutdatedStatus()`, uniquement les `Trip__c` non annulés dont le statut ne correspond plus à leurs dates : voyage futur non « À venir », voyage passé non « Terminé », ou voyage en cours non « En cours ». L'exclusion de `Status__c = 'Annulé'` se fait dès la requête (jamais de réécriture d'un `Trip__c` annulé). Le batch recalcule ensuite le statut attendu via `TripService.computeStatusForDates()` et ne fait un `update` que si le statut calculé diffère du statut actuel, ce qui reste une seconde protection contre les DML inutiles. `TripStatusUpdateScheduler` planifie ce batch avec une taille de lot explicite (200).
 
+
+![Code GGT-05 batch](screenshots/code-06-ggt05-batch.png)
+
+*Figure 14 — Code GGT-05 : TripStatusUpdateBatch et calcul du statut par TripService.computeStatusForDates().*
+
+![Code GGT-05 requête](screenshots/code-07-ggt05-selector.png)
+
+*Figure 15 — Code GGT-05 : requête SOQL filtrée qui ne retourne que les Trip__c dont le statut est périmé.*
+
 ### Ordre de planification
 
 `scripts/apex/schedule-all-batches.apex` planifie `TripAutoCancelScheduler` à 01h00 puis `TripStatusUpdateScheduler` à 01h15, pour laisser le temps au premier batch de finir avant que le second n'exclue les `Trip__c` qui viennent d'être annulés. Ce script n'est pas exécuté automatiquement ; il doit être lancé manuellement par l'équipe GlobalGroupTravel pour activer les schedules.
 
 ---
 
-## 5. Extraits de code commentés
+## 5. Points d'implémentation à retenir
 
-### GGT-02 — Détection de la transition Closed Won (`OpportunityTriggerHandler.cls`)
+Les captures de code de la section 4 montrent chaque fonctionnalité ; voici ce qu'il faut en retenir.
 
-```apex
-public void afterUpdate(List<Opportunity> updatedOpportunities, Map<Id, Opportunity> previousOpportunityById) {
-    List<Opportunity> newlyClosedWonOpportunities = new List<Opportunity>();
-
-    for (Opportunity updatedOpportunity : updatedOpportunities) {
-        Opportunity previousOpportunity = previousOpportunityById.get(updatedOpportunity.Id);
-        Boolean justClosedWon = updatedOpportunity.StageName == Constants.OPPORTUNITY_STAGE_CLOSED_WON
-            && previousOpportunity.StageName != Constants.OPPORTUNITY_STAGE_CLOSED_WON;
-
-        if (justClosedWon) {
-            newlyClosedWonOpportunities.add(updatedOpportunity);
-        }
-    }
-
-    if (!newlyClosedWonOpportunities.isEmpty()) {
-        tripService.createTripsFromOpportunities(newlyClosedWonOpportunities);
-    }
-}
-```
-
-Ce code répond au besoin en ne créant un `Trip__c` que pour les Opportunity qui **viennent de passer** à Closed Won (et non celles qui y sont déjà, ou qui en repartent), et en restant bulkifié pour supporter un update de masse.
-
-### Aiguillage des événements (`TripTriggerHandler.cls`)
-
-```apex
-public void dispatch() {
-    switch on Trigger.operationType {
-        when BEFORE_INSERT { beforeInsert(Trigger.new); }
-        when BEFORE_UPDATE { beforeUpdate(Trigger.new, Trigger.oldMap); }
-        when BEFORE_DELETE { beforeDelete(Trigger.old); }
-        when AFTER_INSERT { afterInsert(Trigger.new); }
-        when AFTER_UPDATE { afterUpdate(Trigger.new, Trigger.oldMap); }
-        when AFTER_DELETE { afterDelete(Trigger.old); }
-        when AFTER_UNDELETE { afterUndelete(Trigger.new); }
-    }
-}
-```
-
-Le trigger ne contient qu'un appel à `dispatch()` ; seul `dispatch()` lit le contexte `Trigger.*`, ce qui laisse les méthodes par événement testables. Même structure pour `OpportunityTriggerHandler`.
-
-### GGT-03 — Validation de cohérence des dates (`TripService.cls`)
-
-```apex
-public void validateDateConsistency(List<Trip__c> trips) {
-    for (Trip__c trip : trips) {
-        Boolean bothDatesFilled = trip.Start_Date__c != null && trip.End_Date__c != null;
-        if (bothDatesFilled && trip.End_Date__c < trip.Start_Date__c) {
-            trip.End_Date__c.addError('La date de fin doit être postérieure à la date de début.');
-        }
-    }
-}
-```
-
-L'utilisation de `addError()` directement sur le champ `End_Date__c` place l'erreur au bon endroit dans l'UI Salesforce (sous le champ concerné), et le test `bothDatesFilled` évite tout NullPointerException si l'une des deux dates est absente.
-
-### GGT-04 — Lecture des seuils configurables (`TripAutoCancelBatch.cls`)
-
-```apex
-public List<Trip__c> start(Database.BatchableContext context) {
-    Trip_Settings__mdt settings = tripSettingsSelector.selectDefault();
-    Date targetDepartureDate = Date.today().addDays(Integer.valueOf(settings.Days_Before_Departure__c));
-    return tripSelector.selectDepartingOnDateBelowMinParticipants(targetDepartureDate, settings.Min_Participants__c);
-}
-```
-
-Les seuils métier (10 participants, J-7) ne sont jamais codés en dur : ils sont lus depuis `Trip_Settings__mdt.Default`, ce qui permet de les ajuster sans redéploiement de code.
-
-### GGT-05 — Recalcul conditionnel (`TripStatusUpdateBatch.cls`)
-
-```apex
-public void execute(Database.BatchableContext context, List<Trip__c> scope) {
-    List<Trip__c> tripsWithChangedStatus = new List<Trip__c>();
-
-    for (Trip__c trip : scope) {
-        String computedStatus = tripService.computeStatusForDates(trip.Start_Date__c, trip.End_Date__c);
-        if (computedStatus != trip.Status__c) {
-            trip.Status__c = computedStatus;
-            tripsWithChangedStatus.add(trip);
-        }
-    }
-
-    tripService.updateTrips(tripsWithChangedStatus);
-    updatedTripCount += tripsWithChangedStatus.size();
-}
-```
-
-Le `start()` de ce batch appelle `TripSelector.selectWithOutdatedStatus()`, dont la requête exclut déjà les `Trip__c` `Annulé` et ne retourne que ceux dont le statut est périmé par rapport aux dates :
-
-```apex
-WHERE Status__c != :Constants.TRIP_STATUS_ANNULE
-AND (
-    (Start_Date__c > TODAY AND Status__c != :Constants.TRIP_STATUS_A_VENIR)
-    OR (End_Date__c < TODAY AND Status__c != :Constants.TRIP_STATUS_TERMINE)
-    OR (Start_Date__c <= TODAY AND End_Date__c >= TODAY AND Status__c != :Constants.TRIP_STATUS_EN_COURS)
-)
-```
-
-Le filtrage se fait donc dans la base de données plutôt qu'en mémoire Apex, ce qui évite de charger des milliers de `Trip__c` inutiles. Ce code d'`execute` ne fait en plus un `update` que sur les enregistrements dont le statut calculé diffère réellement de l'actuel, évitant des DML et des déclenchements de trigger inutiles.
-
----
+- **GGT-02** : le handler ne fait qu'un appel ; le service compare `Trigger.new` et `Trigger.oldMap` pour ne retenir que les Opportunity qui *viennent de passer* à Closed Won (et non celles qui y sont déjà). Le traitement est bulkifié : un seul `insert` pour toute la liste de `Trip__c`.
+- **GGT-03** : `addError()` est posé directement sur `End_Date__c`, ce qui place le message sous le bon champ dans l'interface. Le test `bothDatesFilled` évite toute `NullPointerException` si une date est absente.
+- **GGT-04** : les seuils (10 participants, J-7) sont lus dans `Trip_Settings__mdt.Default` et jamais codés en dur ; ils se modifient sans redéploiement de code.
+- **GGT-05** : la requête SOQL ne retourne que les `Trip__c` dont le statut est périmé, et le batch ne fait un `update` que si le statut calculé diffère de l'actuel (aucun DML ni déclenchement de trigger inutile).
 
 ## 6. Stratégie de tests
 
@@ -345,7 +318,16 @@ Le filtrage se fait donc dans la base de données plutôt qu'en mémoire Apex, c
 | TripStatusUpdateBatch | 100% |
 | **Couverture globale de l'org** | **100%** (exigence minimale Salesforce : 75% ; objectif du projet : >95%) |
 
-Résultat complet : `test-results/02-test-run-summary.txt` (47 tests, 100% de réussite).
+
+![Couverture de code](screenshots/org-09-apex-classes-coverage.jpg)
+
+*Figure 16 — Classes Apex de l'org : couverture de code globale de 100 %.*
+
+![Résultats des tests](screenshots/org-10-test-results.jpg)
+
+*Figure 17 — Exécution des tests d'application (campagne du 06/10/2026) : tous les tests au statut Pass.*
+
+Résultat complet : `test-results/02-test-run-summary.txt` (42 méthodes de test, 49 exécutions avec les 7 `@TestSetup`, 100% de réussite).
 
 ### 6.3 Scénarios de sécurité testés
 
