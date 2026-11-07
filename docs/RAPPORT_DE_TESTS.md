@@ -6,12 +6,12 @@
 
 | Indicateur | Résultat |
 |---|---|
-| Méthodes de test | **42**, toutes réussies |
-| Exécutions comptées par Salesforce | 49 (42 méthodes de test + 7 méthodes `@TestSetup`) |
+| Méthodes de test | **45**, toutes réussies |
+| Exécutions comptées par Salesforce | 53 (45 méthodes de test + 8 méthodes `@TestSetup`) |
 | Taux de réussite | **100%** |
 | Taux d'échec | 0% |
 | Couverture de code globale de l'org | **100%** (minimum Salesforce : 75 %) |
-| Durée d'exécution | 18717 ms |
+| Durée d'exécution | 17523 ms |
 
 ## 2. Types de tests effectués
 
@@ -21,6 +21,7 @@
 - **Tests asynchrones** : `Test.startTest()` / `Test.stopTest()` autour de `Database.executeBatch(..., 200)` pour exécuter les batchs de façon synchrone dans le test.
 - **Tests de sécurité** : `System.runAs()` sous un utilisateur n'ayant que le Permission Set commercial.
 - **Cas limites** : dates invalides, champs obligatoires vides, participants à `null`, voyage déjà annulé, Closed Won → Closed Won.
+- **Tests fonctionnels de bout en bout** : `LifecycleEndToEndTest` rejoue le cycle de vie d'un voyage (création du compte et de l'Opportunity, passage à Closed Won, création du voyage, nuits successives des batchs, passage « En cours », « Terminé » ou « Annulé »). Voir la section dédiée plus bas.
 - Aucun test n'utilise `SeeAllData=true`.
 
 ## 3. Résultats par classe de test
@@ -34,18 +35,11 @@
 | `ServicesTest` | Couche Service (création de données) | 8 | 8/8 Pass |
 | `TripServiceTest` | Logique métier : mapping GGT-02, détection de transition, statut, annulation | 7 | 7/7 Pass |
 | `OpportunityTriggerHandlerTest` | GGT-02 : création du Trip à Closed Won (transition, bulk de 200, doublon) | 5 | 5/5 Pass |
+| `LifecycleEndToEndTest` | Fonctionnel de bout en bout : cycle de vie complet d'un voyage | 3 | 3/3 Pass |
 | `SelectorsTest` | Couche Selector (lecture des données) | 5 | 5/5 Pass |
 | `TripSchedulersTest` | Planification des deux batchs | 2 | 2/2 Pass |
 
 ## 4. Détail des tests
-
-**TripTriggerHandlerTest**
-
-- `deleteAndUndeleteTrip_isDispatchedWithoutError` — Pass
-- `insert_withConsistentDates_isAccepted` — Pass
-- `insert_withEndDateBeforeStartDate_isRejected` — Pass
-- `insert_withOneDateBlank_doesNotThrowAndFailsOnRequiredFieldInstead` — Pass
-- `update_withEndDateMovedBeforeStartDate_isRejected` — Pass
 
 **TripAutoCancelBatchTest**
 
@@ -54,10 +48,19 @@
 - `tripWithFewParticipantsAtTargetDate_isCancelled` — Pass
 - `tripWithNullParticipantsAtTargetDate_isNotCancelled` — Pass
 
-**SecurityAndSharingTest**
+**LifecycleEndToEndTest**
 
-- `cancelledTrip_isNotVisibleWithoutManagersGroupMembership` — Pass
-- `restrictedUser_cannotEditTotalCostEvenThroughTripService` — Pass
+- `bulkOfSignedOpportunities_createsOnlyValidTrips_andCancelsOnlyUnderfilledOnes` — Pass
+- `signedOpportunity_createsTrip_thenTripProgressesFromUpcomingToOngoingToCompleted` — Pass
+- `underfilledSignedTrip_isCancelledSevenDaysBeforeDeparture_thenIgnoredByStatusRecalculation` — Pass
+
+**TripTriggerHandlerTest**
+
+- `deleteAndUndeleteTrip_isDispatchedWithoutError` — Pass
+- `insert_withConsistentDates_isAccepted` — Pass
+- `insert_withEndDateBeforeStartDate_isRejected` — Pass
+- `insert_withOneDateBlank_doesNotThrowAndFailsOnRequiredFieldInstead` — Pass
+- `update_withEndDateMovedBeforeStartDate_isRejected` — Pass
 
 **TripStatusUpdateBatchTest**
 
@@ -95,6 +98,16 @@
 - `deleteAndUndeleteOpportunity_isDispatchedWithoutCreatingTrip` — Pass
 - `transitionToOtherStage_doesNotCreateTrip` — Pass
 
+**SecurityAndSharingTest**
+
+- `cancelledTrip_isNotVisibleWithoutManagersGroupMembership` — Pass
+- `restrictedUser_cannotEditTotalCostEvenThroughTripService` — Pass
+
+**TripSchedulersTest**
+
+- `tripAutoCancelScheduler_schedulesUnderlyingBatch` — Pass
+- `tripStatusUpdateScheduler_schedulesUnderlyingBatch` — Pass
+
 **SelectorsTest**
 
 - `accountSelector_selectByIds_returnsMatchingAccounts` — Pass
@@ -102,11 +115,6 @@
 - `opportunitySelector_selectByIds_returnsMatchingOpportunities` — Pass
 - `tripSelector_selectByIds_returnsMatchingTrips` — Pass
 - `tripSettingsSelector_selectDefault_returnsConfiguredThresholds` — Pass
-
-**TripSchedulersTest**
-
-- `tripAutoCancelScheduler_schedulesUnderlyingBatch` — Pass
-- `tripStatusUpdateScheduler_schedulesUnderlyingBatch` — Pass
 
 ## 5. Couverture de code par classe
 
@@ -133,7 +141,17 @@
 
 La classe `Constants` n'apparaît pas avec une couverture significative : elle ne contient que des constantes `static final`, sans ligne exécutable.
 
-## 6. Corrections apportées suite aux tests
+## 6. Tests fonctionnels (bout en bout)
+
+Trois scénarios de `LifecycleEndToEndTest` vérifient l'enchaînement complet des règles, avec les données de configuration réelles (`Trip_Settings__mdt`). Les batchs de nuit sont exécutés une fois par « nuit » simulée, et les dates du voyage sont décalées pour simuler le passage du temps.
+
+| Scénario | Étapes | Résultat |
+|---|---|---|
+| Voyage signé qui se déroule normalement | Compte et Opportunity créés, passage à Closed Won, puis nuits successives (départ dans 30 jours, jour du départ, après la fin) | `Trip__c` créé « À venir », puis « En cours », puis « Terminé » |
+| Voyage sous-rempli annulé à J-7 | Opportunity signée avec 6 participants (seuil 10) et départ à J+7, batch d'annulation, puis recalcul de statut avec des dates passées | « Annulé », jamais modifié par le recalcul |
+| Lot de trois Opportunity signées ensemble | Un voyage complet, un sous-rempli, une Opportunity sans dates, puis les deux batchs | 2 voyages créés, le complet « À venir », le sous-rempli « Annulé », celle sans dates ignorée sans bloquer les autres |
+
+## 7. Corrections apportées suite aux tests
 
 | Constat lors de l'exécution | Correction |
 |---|---|
@@ -145,7 +163,7 @@ La classe `Constants` n'apparaît pas avec une couverture significative : elle n
 | La requête de GGT-05 chargeait tous les voyages non annulés | Filtrage en SOQL sur les seuls voyages au statut périmé |
 | Les handlers de trigger portaient de la logique métier | Logique déplacée dans `TripService` ; handlers réduits à des appels, tests delete/undelete ajoutés |
 
-## 7. Limite connue
+## 8. Limite connue
 
 Le test « un utilisateur devient capable de voir un voyage annulé après son ajout au groupe de managers » n'est pas automatisé : le recalcul de partage d'une Sharing Rule est asynchrone et ne s'exécute pas dans un test Apex, même entre `startTest()` et `stopTest()`. Ce comportement est validé manuellement dans l'org (voir `test-results/04-security-verification.txt`).
 

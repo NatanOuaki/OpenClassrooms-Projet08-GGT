@@ -192,7 +192,7 @@ Une Criteria-Based Sharing Rule sur `Trip__c` partage en lecture seule les enreg
 
 Toutes les classes Selector et Service sont déclarées `with sharing`. Toute opération DML issue de données manipulées par le code applique `Security.stripInaccessible(AccessType.CREATABLE/UPDATABLE/READABLE, records)` avant écriture ou lecture, garantissant le respect du CRUD/FLS de l'utilisateur courant même en dehors du contexte déclaratif.
 
-**Point d'attention découvert en testant** : au format source SFDX, un champ custom optionnel ne reçoit **aucune** FLS pour un profil tant qu'aucun fichier Profile/Permission Set ne le déclare explicitement — y compris pour le profil Administrateur Système. Le fichier `force-app/main/default/profiles/Admin.profile-meta.xml` accorde donc explicitement la FLS sur les champs optionnels utilisés avec `Security.stripInaccessible` (`Trip__c.Number_of_Participants__c`, `Trip__c.Total_Cost__c`, `Trip__c.Opportunity__c`, et les 4 champs custom d'`Opportunity`), afin que l'administrateur ne se voie pas lui-même privé de ces champs par le CRUD/FLS enforcement du code.
+**Comportement à connaître : FLS des champs personnalisés** : à la création d'un champ personnalisé (par la CLI ou par un déploiement), les accès en lecture et en écriture sont à *faux* par défaut pour **tous** les profils, y compris le profil Administrateur Système. Il faut donc déclarer explicitement la FLS dans un Profile ou un Permission Set. Ici, `force-app/main/default/profiles/Admin.profile-meta.xml` accorde la FLS sur les champs optionnels utilisés avec `Security.stripInaccessible` (`Trip__c.Number_of_Participants__c`, `Trip__c.Total_Cost__c`, `Trip__c.Opportunity__c` et les 4 champs personnalisés d'`Opportunity`), et le Permission Set `Commercial_GlobalGroupTravel` l'accorde aux commerciaux. À garder en tête pour tout nouveau champ.
 
 ### 3.6 Non-utilisation de Salesforce Shield
 
@@ -253,7 +253,7 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 ![Code GGT-04 requête et scheduler](screenshots/code-05-ggt04-selector-scheduler.png)
 
-*Figure 13 — Code GGT-04 : requête du TripSelector, TripAutoCancelScheduler et planification à 01h00.*
+*Figure 13 — Code GGT-04 : requête du TripSelector, TripAutoCancelScheduler et planification quotidienne.*
 
 ### GGT-05 — Recalcul automatique de statut
 
@@ -270,9 +270,9 @@ Ce projet est développé sur une org Developer Edition gratuite, sur laquelle S
 
 *Figure 15 — Code GGT-05 : requête SOQL filtrée qui ne retourne que les Trip__c dont le statut est périmé.*
 
-### Ordre de planification
+### Activation de la planification
 
-`scripts/apex/schedule-all-batches.apex` planifie `TripAutoCancelScheduler` à 01h00 puis `TripStatusUpdateScheduler` à 01h15, pour laisser le temps au premier batch de finir avant que le second n'exclue les `Trip__c` qui viennent d'être annulés. Ce script n'est pas exécuté automatiquement ; il doit être lancé manuellement par l'équipe GlobalGroupTravel pour activer les schedules.
+`scripts/apex/schedule-all-batches.apex` planifie les deux batchs quotidiens (`TripAutoCancelScheduler` pour GGT-04 et `TripStatusUpdateScheduler` pour GGT-05). Ce script n'est pas exécuté automatiquement : il doit être lancé manuellement par l'équipe GlobalGroupTravel pour activer les schedules.
 
 ---
 
@@ -294,6 +294,7 @@ Les captures de code de la section 4 montrent chaque fonctionnalité ; voici ce 
 - Aucune classe de test n'utilise `SeeAllData=true`.
 - Scénarios défensifs et cas d'erreur testés en plus du chemin nominal (dates invalides, champs vides, listes vides, non-régression sur repassage Closed Won → Closed Won).
 - Test de sécurité dédié (`SecurityAndSharingTest`) exécuté via `System.runAs()` sous un utilisateur n'ayant que le Permission Set `Commercial_GlobalGroupTravel`.
+- Tests fonctionnels de bout en bout (`LifecycleEndToEndTest`), qui rejouent le cycle de vie complet d'un voyage (voir 6.5).
 
 ### 6.2 Couverture par classe
 
@@ -327,7 +328,7 @@ Les captures de code de la section 4 montrent chaque fonctionnalité ; voici ce 
 
 *Figure 17 — Exécution des tests d'application (campagne du 06/10/2026) : tous les tests au statut Pass.*
 
-Résultat complet : `test-results/02-test-run-summary.txt` (42 méthodes de test, 49 exécutions avec les 7 `@TestSetup`, 100% de réussite).
+Résultat complet : `test-results/02-test-run-summary.txt` (45 méthodes de test, 53 exécutions avec les 8 `@TestSetup`, 100% de réussite).
 
 ### 6.3 Scénarios de sécurité testés
 
@@ -343,10 +344,27 @@ Résultat complet : `test-results/02-test-run-summary.txt` (42 méthodes de test
 
 ---
 
+### 6.5 Tests fonctionnels (bout en bout)
+
+Les tests unitaires vérifient chaque règle isolément. Les tests fonctionnels de `LifecycleEndToEndTest` vérifient que les règles s'enchaînent comme dans l'usage réel : on crée les objets, on fait avancer le cycle de vie, et on contrôle le résultat à chaque étape. Les batchs de nuit sont exécutés comme le ferait la planification, une fois par « nuit » simulée, et les dates du voyage sont décalées pour simuler le passage du temps.
+
+| Scénario | Étapes simulées | Résultat attendu |
+|---|---|---|
+| **Voyage signé qui se déroule normalement** | 1. Création d'un compte, puis d'une Opportunity (Prospecting) avec destination, dates, participants et montant. 2. Passage à Closed Won. 3. Nuit avec départ dans 30 jours. 4. Jour du départ. 5. Après la date de fin. | Un `Trip__c` est créé automatiquement (« À venir », montant et participants repris). Il reste « À venir », passe « En cours » le jour du départ, puis « Terminé ». |
+| **Voyage sous-rempli annulé à J-7** | 1. Opportunity signée avec 6 participants (seuil : 10) et un départ à J+7. 2. Batch d'auto-annulation. 3. Dates décalées dans le passé, puis batch de recalcul de statut. | Le voyage passe « Annulé ». Le recalcul de statut ne le modifie jamais, même avec des dates passées. |
+| **Lot de trois Opportunity signées en même temps** | Un voyage complet, un voyage sous-rempli et une Opportunity sans dates, passés à Closed Won ensemble, puis les deux batchs de nuit. | Deux `Trip__c` seulement (celui sans dates est ignoré sans bloquer les autres). Le voyage complet reste « À venir », le sous-rempli est « Annulé ». |
+
+
+![Code tests fonctionnels](screenshots/code-08-e2e-lifecycle.png)
+
+*Figure 18 — Test fonctionnel : de la signature de l'Opportunity jusqu'au voyage terminé, avec une exécution du batch de nuit à chaque étape.*
+
+Ces trois scénarios s'exécutent avec les mêmes données de configuration (`Trip_Settings__mdt`) que la production et passent tous au statut Pass (voir le rapport de tests).
+
+---
+
 ## 7. Limites connues et pistes d'évolution
 
-- **Pas de Salesforce Shield** : la sécurité repose sur OWD/rôles/Permission Set/Sharing Rule/FLS + enforcement applicatif ; pas de chiffrement au repos ni d'audit trail avancé. À réévaluer si l'org passe en édition payante.
+- **Salesforce Shield non installable dans cette org** (Developer Edition gratuite) : la sécurité repose sur OWD/rôles/Permission Set/Sharing Rule/FLS + enforcement applicatif ; pas de chiffrement au repos ni d'audit trail avancé. À réévaluer si l'org passe en édition payante.
 - **OWD Opportunity en Private plutôt que Controlled by Parent** (limitation de l'API Metadata Salesforce, voir section 3.1) : un Manager ne voit pas automatiquement les Opportunity de ses commerciaux subordonnés. Piste : ajouter une Sharing Rule basée sur les rôles dédiée à Opportunity si ce besoin se confirme en usage réel.
 - **Sharing Rule sur `Trip__c` simple** : un seul critère (`Status__c = 'Annulé'`) partagé avec un seul groupe. À complexifier (plusieurs groupes, plusieurs statuts) si l'organisation commerciale de GlobalGroupTravel grandit.
-- **Ordre de planification des deux batchs** : `TripAutoCancelScheduler` (01h00) doit terminer avant `TripStatusUpdateScheduler` (01h15) pour que ce dernier ne recalcule pas le statut d'un `Trip__c` qui vient d'être annulé. Ce délai de 15 minutes est calibré pour le volume de données actuel ; à surveiller et éventuellement élargir si le nombre de `Trip__c` traités par lot augmente significativement.
-- **FLS Admin explicite requise** : au format source SFDX, les champs custom optionnels ne reçoivent aucune FLS automatique, y compris pour le profil Administrateur Système (voir section 3.5). Tout nouveau champ optionnel introduit à l'avenir devra recevoir une entrée FLS explicite dans `Admin.profile-meta.xml` (ou un Permission Set dédié) pour rester utilisable avec `Security.stripInaccessible`.

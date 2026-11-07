@@ -1,49 +1,52 @@
- ›   Warning: @salesforce/cli update available from 2.123.1 to 2.155.8.
+ ›   Warning: @salesforce/cli update available from 2.123.1 to 2.157.8.
 === Test Results
-TEST NAME                                                                                               OUTCOME  MESSAGE  RUNTIME (MS)
-──────────────────────────────────────────────────────────────────────────────────────────────────────  ───────  ───────  ────────────
-TripTriggerHandlerTest.deleteAndUndeleteTrip_isDispatchedWithoutError                                   Pass              2489        
-TripTriggerHandlerTest.insert_withConsistentDates_isAccepted                                            Pass              56          
-TripTriggerHandlerTest.insert_withEndDateBeforeStartDate_isRejected                                     Pass              25          
-TripTriggerHandlerTest.insert_withOneDateBlank_doesNotThrowAndFailsOnRequiredFieldInstead               Pass              28          
-TripTriggerHandlerTest.update_withEndDateMovedBeforeStartDate_isRejected                                Pass              59          
-TripAutoCancelBatchTest.alreadyCancelledTrip_isNotReprocessed                                           Pass              850         
-TripAutoCancelBatchTest.tripWithEnoughParticipantsAtTargetDate_isNotCancelled                           Pass              224         
-TripAutoCancelBatchTest.tripWithFewParticipantsAtTargetDate_isCancelled                                 Pass              345         
-TripAutoCancelBatchTest.tripWithNullParticipantsAtTargetDate_isNotCancelled                             Pass              225         
-SecurityAndSharingTest.cancelledTrip_isNotVisibleWithoutManagersGroupMembership                         Pass              1463        
-SecurityAndSharingTest.restrictedUser_cannotEditTotalCostEvenThroughTripService                         Pass              1035        
-TripStatusUpdateBatchTest.cancelledTrip_isNeverModifiedEvenIfDatesWouldMeanTermine                      Pass              241         
-TripStatusUpdateBatchTest.futureTrip_isSetToAVenir                                                      Pass              229         
-TripStatusUpdateBatchTest.ongoingTrip_isSetToEnCours                                                    Pass              190         
-TripStatusUpdateBatchTest.pastTrip_isSetToTermine                                                       Pass              195         
-ServicesTest.accountService_createAccounts_doesNothingWhenEmpty                                         Pass              58          
-ServicesTest.accountService_createAccounts_insertsRecords                                               Pass              212         
-ServicesTest.contractService_createContracts_doesNothingWhenEmpty                                       Pass              28          
-ServicesTest.contractService_createContracts_insertsRecords                                             Pass              212         
-ServicesTest.opportunityService_createOpportunities_doesNothingWhenEmpty                                Pass              26          
-ServicesTest.opportunityService_createOpportunities_insertsRecords                                      Pass              793         
-ServicesTest.tripService_cancelTrips_doesNothingWhenEmpty                                               Pass              27          
-ServicesTest.tripService_updateTrips_doesNothingWhenEmpty                                               Pass              27          
-TripServiceTest.cancelTrips_setsStatusToAnnule                                                          Pass              163         
-TripServiceTest.computeStatusForDates_returnsExpectedStatusForEachPeriod                                Pass              8           
-TripServiceTest.createTripsForNewlyClosedWonOpportunities_createsTripOnlyForTransitionToClosedWon       Pass              225         
-TripServiceTest.createTripsForNewlyClosedWonOpportunities_doesNothingWhenNoOpportunityIsNewlyClosedWon  Pass              27          
-TripServiceTest.createTripsFromOpportunities_mapsAllFieldsFromClosedWonOpportunity                      Pass              130         
-TripServiceTest.createTripsFromOpportunities_skipsOpportunityMissingRequiredTripFieldsWithoutError      Pass              87          
-TripServiceTest.insertTrips_doesNothingWhenListEmpty                                                    Pass              19          
-OpportunityTriggerHandlerTest.alreadyClosedWonOpportunity_updatedAgain_doesNotCreateDuplicateTrip       Pass              223         
-OpportunityTriggerHandlerTest.bulkClosedWonTransition_createsOneTripPerOpportunity                      Pass              5592        
-OpportunityTriggerHandlerTest.closedWonTransition_createsTripWithExpectedMapping                        Pass              203         
-OpportunityTriggerHandlerTest.deleteAndUndeleteOpportunity_isDispatchedWithoutCreatingTrip              Pass              2022        
-OpportunityTriggerHandlerTest.transitionToOtherStage_doesNotCreateTrip                                  Pass              164         
-SelectorsTest.accountSelector_selectByIds_returnsMatchingAccounts                                       Pass              63          
-SelectorsTest.contractSelector_selectByIds_returnsMatchingContracts                                     Pass              33          
-SelectorsTest.opportunitySelector_selectByIds_returnsMatchingOpportunities                              Pass              35          
-SelectorsTest.tripSelector_selectByIds_returnsMatchingTrips                                             Pass              38          
-SelectorsTest.tripSettingsSelector_selectDefault_returnsConfiguredThresholds                            Pass              12          
-TripSchedulersTest.tripAutoCancelScheduler_schedulesUnderlyingBatch                                     Pass              377         
-TripSchedulersTest.tripStatusUpdateScheduler_schedulesUnderlyingBatch                                   Pass              259         
+TEST NAME                                                                                                         OUTCOME  MESSAGE  RUNTIME (MS)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────  ───────  ───────  ────────────
+TripAutoCancelBatchTest.alreadyCancelledTrip_isNotReprocessed                                                     Pass              151         
+TripAutoCancelBatchTest.tripWithEnoughParticipantsAtTargetDate_isNotCancelled                                     Pass              96          
+TripAutoCancelBatchTest.tripWithFewParticipantsAtTargetDate_isCancelled                                           Pass              145         
+TripAutoCancelBatchTest.tripWithNullParticipantsAtTargetDate_isNotCancelled                                       Pass              98          
+LifecycleEndToEndTest.bulkOfSignedOpportunities_createsOnlyValidTrips_andCancelsOnlyUnderfilledOnes               Pass              574         
+LifecycleEndToEndTest.signedOpportunity_createsTrip_thenTripProgressesFromUpcomingToOngoingToCompleted            Pass              304         
+LifecycleEndToEndTest.underfilledSignedTrip_isCancelledSevenDaysBeforeDeparture_thenIgnoredByStatusRecalculation  Pass              256         
+TripTriggerHandlerTest.deleteAndUndeleteTrip_isDispatchedWithoutError                                             Pass              1759        
+TripTriggerHandlerTest.insert_withConsistentDates_isAccepted                                                      Pass              48          
+TripTriggerHandlerTest.insert_withEndDateBeforeStartDate_isRejected                                               Pass              19          
+TripTriggerHandlerTest.insert_withOneDateBlank_doesNotThrowAndFailsOnRequiredFieldInstead                         Pass              29          
+TripTriggerHandlerTest.update_withEndDateMovedBeforeStartDate_isRejected                                          Pass              57          
+TripStatusUpdateBatchTest.cancelledTrip_isNeverModifiedEvenIfDatesWouldMeanTermine                                Pass              355         
+TripStatusUpdateBatchTest.futureTrip_isSetToAVenir                                                                Pass              283         
+TripStatusUpdateBatchTest.ongoingTrip_isSetToEnCours                                                              Pass              246         
+TripStatusUpdateBatchTest.pastTrip_isSetToTermine                                                                 Pass              249         
+ServicesTest.accountService_createAccounts_doesNothingWhenEmpty                                                   Pass              54          
+ServicesTest.accountService_createAccounts_insertsRecords                                                         Pass              237         
+ServicesTest.contractService_createContracts_doesNothingWhenEmpty                                                 Pass              40          
+ServicesTest.contractService_createContracts_insertsRecords                                                       Pass              275         
+ServicesTest.opportunityService_createOpportunities_doesNothingWhenEmpty                                          Pass              38          
+ServicesTest.opportunityService_createOpportunities_insertsRecords                                                Pass              383         
+ServicesTest.tripService_cancelTrips_doesNothingWhenEmpty                                                         Pass              32          
+ServicesTest.tripService_updateTrips_doesNothingWhenEmpty                                                         Pass              32          
+TripServiceTest.cancelTrips_setsStatusToAnnule                                                                    Pass              218         
+TripServiceTest.computeStatusForDates_returnsExpectedStatusForEachPeriod                                          Pass              9           
+TripServiceTest.createTripsForNewlyClosedWonOpportunities_createsTripOnlyForTransitionToClosedWon                 Pass              602         
+TripServiceTest.createTripsForNewlyClosedWonOpportunities_doesNothingWhenNoOpportunityIsNewlyClosedWon            Pass              33          
+TripServiceTest.createTripsFromOpportunities_mapsAllFieldsFromClosedWonOpportunity                                Pass              180         
+TripServiceTest.createTripsFromOpportunities_skipsOpportunityMissingRequiredTripFieldsWithoutError                Pass              113         
+TripServiceTest.insertTrips_doesNothingWhenListEmpty                                                              Pass              29          
+OpportunityTriggerHandlerTest.alreadyClosedWonOpportunity_updatedAgain_doesNotCreateDuplicateTrip                 Pass              663         
+OpportunityTriggerHandlerTest.bulkClosedWonTransition_createsOneTripPerOpportunity                                Pass              5440        
+OpportunityTriggerHandlerTest.closedWonTransition_createsTripWithExpectedMapping                                  Pass              237         
+OpportunityTriggerHandlerTest.deleteAndUndeleteOpportunity_isDispatchedWithoutCreatingTrip                        Pass              955         
+OpportunityTriggerHandlerTest.transitionToOtherStage_doesNotCreateTrip                                            Pass              170         
+SecurityAndSharingTest.cancelledTrip_isNotVisibleWithoutManagersGroupMembership                                   Pass              1366        
+SecurityAndSharingTest.restrictedUser_cannotEditTotalCostEvenThroughTripService                                   Pass              1214        
+TripSchedulersTest.tripAutoCancelScheduler_schedulesUnderlyingBatch                                               Pass              174         
+TripSchedulersTest.tripStatusUpdateScheduler_schedulesUnderlyingBatch                                             Pass              118         
+SelectorsTest.accountSelector_selectByIds_returnsMatchingAccounts                                                 Pass              50          
+SelectorsTest.contractSelector_selectByIds_returnsMatchingContracts                                               Pass              62          
+SelectorsTest.opportunitySelector_selectByIds_returnsMatchingOpportunities                                        Pass              53          
+SelectorsTest.tripSelector_selectByIds_returnsMatchingTrips                                                       Pass              54          
+SelectorsTest.tripSettingsSelector_selectDefault_returnsConfiguredThresholds                                      Pass              23          
 
 
 === Apex Code Coverage by Class
@@ -69,30 +72,31 @@ TripSettingsSelector       100%
 TripStatusUpdateBatch      100%                    
 
 
-=== Test Setup Time by Test Class for Run 707g800000u9kQE
+=== Test Setup Time by Test Class for Run 707g800000uhwiM
 TEST SETUP METHOD NAME               SETUP TIME
 ───────────────────────────────────  ──────────
-TripTriggerHandlerTest.setup         267       
-TripAutoCancelBatchTest.setup        219       
-SecurityAndSharingTest.setup         279       
-TripStatusUpdateBatchTest.setup      178       
-TripServiceTest.setup                178       
-OpportunityTriggerHandlerTest.setup  176       
-SelectorsTest.setup                  392       
+TripAutoCancelBatchTest.setup        149       
+LifecycleEndToEndTest.setup          178       
+TripTriggerHandlerTest.setup         263       
+TripStatusUpdateBatchTest.setup      231       
+TripServiceTest.setup                200       
+OpportunityTriggerHandlerTest.setup  193       
+SecurityAndSharingTest.setup         254       
+SelectorsTest.setup                  455       
 
 
 === Test Summary
 NAME                 VALUE                            
 ───────────────────  ─────────────────────────────────
 Outcome              Passed                           
-Tests Ran            49                               
+Tests Ran            53                               
 Pass Rate            100%                             
 Fail Rate            0%                               
 Skip Rate            0%                               
-Test Run Id          707g800000u9kQE                  
-Test Setup Time      1689 ms                          
-Test Execution Time  18717 ms                         
-Test Total Time      20406 ms                         
+Test Run Id          707g800000uhwiM                  
+Test Setup Time      1923 ms                          
+Test Execution Time  17523 ms                         
+Test Total Time      19446 ms                         
 Org Id               00Dg800000HC36oEAD               
 Username             natan.ed182ce7334e@agentforce.com
 Org Wide Coverage    100%                             
