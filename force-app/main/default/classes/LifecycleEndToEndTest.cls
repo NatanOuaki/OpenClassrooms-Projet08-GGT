@@ -16,19 +16,16 @@ private class LifecycleEndToEndTest {
         Decimal participants
     ) {
         Account acc = [SELECT Id FROM Account LIMIT 1];
-        Opportunity opportunity = new Opportunity(
-            Name = 'Voyage ' + destination,
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today(),
-            Amount = 9000,
-            Destination__c = destination,
-            Start_Date__c = startDate,
-            End_Date__c = endDate,
-            Number_of_Participants__c = participants
+        return TestDataFactory.createTripOpportunity(
+            acc.Id,
+            'Voyage ' + destination,
+            'Prospecting',
+            9000,
+            destination,
+            startDate,
+            endDate,
+            participants
         );
-        insert opportunity;
-        return opportunity;
     }
 
     private static void markAsClosedWon(List<Opportunity> opportunities) {

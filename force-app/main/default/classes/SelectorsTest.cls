@@ -8,13 +8,7 @@ private class SelectorsTest {
         Contract contract = new Contract(AccountId = acc.Id, StartDate = Date.today(), ContractTerm = 12);
         insert contract;
 
-        Opportunity opp = new Opportunity(
-            Name = 'Opp Selectors',
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today()
-        );
-        insert opp;
+        TestDataFactory.createOpportunity(acc.Id, 'Opp Selectors', 'Prospecting', null);
 
         Trip__c trip = new Trip__c(
             Account__c = acc.Id,

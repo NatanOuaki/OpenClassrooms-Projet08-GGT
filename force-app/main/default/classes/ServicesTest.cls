@@ -35,7 +35,7 @@ private class ServicesTest {
         Account acc = new Account(Name = 'Compte Opp Service');
         insert acc;
         List<Opportunity> opportunities = new List<Opportunity>{
-            new Opportunity(Name = 'Opp Service', AccountId = acc.Id, StageName = 'Prospecting', CloseDate = Date.today())
+            TestDataFactory.buildTripOpportunity(acc.Id, 'Opp Service', 'Prospecting', null, null, null, null, null)
         };
         new OpportunityService().createOpportunities(opportunities);
         System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE AccountId = :acc.Id]);

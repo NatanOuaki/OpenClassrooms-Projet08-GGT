@@ -8,18 +8,16 @@ private class TripServiceTest {
     @isTest
     static void createTripsFromOpportunities_mapsAllFieldsFromClosedWonOpportunity() {
         Account acc = [SELECT Id FROM Account LIMIT 1];
-        Opportunity opp = new Opportunity(
-            Name = 'Voyage Test',
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today(),
-            Amount = 5000,
-            Destination__c = 'Rome',
-            Start_Date__c = Date.today().addDays(30),
-            End_Date__c = Date.today().addDays(35),
-            Number_of_Participants__c = 20
+        Opportunity opp = TestDataFactory.createTripOpportunity(
+            acc.Id,
+            'Voyage Test',
+            'Prospecting',
+            5000,
+            'Rome',
+            Date.today().addDays(30),
+            Date.today().addDays(35),
+            20
         );
-        insert opp;
 
         Test.startTest();
         new TripService().createTripsFromOpportunities(new List<Opportunity>{ opp });
@@ -45,15 +43,8 @@ private class TripServiceTest {
     @isTest
     static void createTripsFromOpportunities_skipsOpportunityMissingRequiredTripFieldsWithoutError() {
         Account acc = [SELECT Id FROM Account LIMIT 1];
-        Opportunity opp = new Opportunity(
-            Name = 'Voyage Incomplet',
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today(),
-            Amount = 1000
-            // Destination__c / Start_Date__c / End_Date__c volontairement absents.
-        );
-        insert opp;
+        // Destination, dates et participants volontairement absents.
+        Opportunity opp = TestDataFactory.createOpportunity(acc.Id, 'Voyage Incomplet', 'Prospecting', 1000);
 
         new TripService().createTripsFromOpportunities(new List<Opportunity>{ opp });
 
@@ -67,27 +58,25 @@ private class TripServiceTest {
     @isTest
     static void createTripsForNewlyClosedWonOpportunities_createsTripOnlyForTransitionToClosedWon() {
         Account acc = [SELECT Id FROM Account LIMIT 1];
-        Opportunity prospectingOppty = new Opportunity(
-            Name = 'Voyage Qui Vient De Signer',
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today(),
-            Amount = 4000,
-            Destination__c = 'Porto',
-            Start_Date__c = Date.today().addDays(30),
-            End_Date__c = Date.today().addDays(34),
-            Number_of_Participants__c = 12
+        Opportunity prospectingOppty = TestDataFactory.buildTripOpportunity(
+            acc.Id,
+            'Voyage Qui Vient De Signer',
+            'Prospecting',
+            4000,
+            'Porto',
+            Date.today().addDays(30),
+            Date.today().addDays(34),
+            12
         );
-        Opportunity alreadyWonOppty = new Opportunity(
-            Name = 'Voyage Déjà Signé',
-            AccountId = acc.Id,
-            StageName = 'Closed Won',
-            CloseDate = Date.today(),
-            Amount = 2000,
-            Destination__c = 'Séville',
-            Start_Date__c = Date.today().addDays(40),
-            End_Date__c = Date.today().addDays(44),
-            Number_of_Participants__c = 15
+        Opportunity alreadyWonOppty = TestDataFactory.buildTripOpportunity(
+            acc.Id,
+            'Voyage Déjà Signé',
+            'Closed Won',
+            2000,
+            'Séville',
+            Date.today().addDays(40),
+            Date.today().addDays(44),
+            15
         );
         insert new List<Opportunity>{ prospectingOppty, alreadyWonOppty };
 
